@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistem Asesmen Sumatif Akhir Jenjang On Line</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
+        html { font-size: 16px; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px 16px;
+            text-align: center;
+        }
+        .header h1 { font-size: clamp(18px, 5vw, 28px); margin-bottom: 4px; font-weight: 700; }
+        .header p  { font-size: clamp(11px, 3vw, 14px); opacity: 0.9; }
+
+        /* ===== PAGE ===== */
+        .page { display: none; padding: clamp(16px, 4vw, 40px); animation: fadeIn 0.4s ease-in-out; }
+        .page.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== PAGE 1: COVER ===== */
+        .cover-section { max-width: 500px; margin: 0 auto; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 6px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 13px 14px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .form-group select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234b5563' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+        .form-group input:disabled {
+            background-color: var(--gray-100);
+            color: var(--gray-600);
+            cursor: not-allowed;
+        }
+
+        /* ===== KATA KUNCI INPUT ===== */
+        .kata-kunci-wrapper { position: relative; }
+        .kata-kunci-wrapper input { padding-right: 48px !important; }
+        .toggle-password-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--gray-600);
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            line-height: 1;
+        }
+        .toggle-password-btn:hover { color: var(--primary); }
+
+        /* Status validasi kata kunci */
+        .kunci-status {
+            display: none;
+            font-size: 12px;
+            margin-top: 5px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .kunci-status.valid {
+            display: block;
+            background: rgba(16,185,129,0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        .kunci-status.invalid {
+            display: block;
+            background: rgba(239,68,68,0.08);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            width: 100%;
+            touch-action: manipulation;
+            min-height: 48px;
+        }
+        .btn-primary  { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; }
+        .btn-primary:active  { transform: scale(0.98); }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-secondary { background: var(--gray-200); color: var(--gray-900); }
+        .btn-secondary:active { background: var(--gray-300); transform: scale(0.98); }
+        .btn-success  { background: var(--success); color: white; }
+        .btn-success:active  { background: #059669; transform: scale(0.98); }
+        .btn-danger   { background: var(--danger); color: white; }
+        .btn-danger:active   { background: #dc2626; transform: scale(0.98); }
+
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+
+        /* ===== INFO BOX ===== */
+        .info-box {
+            background: var(--gray-50);
+            border-left: 4px solid var(--primary);
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: var(--gray-700);
+            line-height: 1.5;
+        }
+
+        /* ===== PAGE 2: EXAM ===== */
+        .exam-container { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
+        .webview-section {
+            background: var(--gray-100);
+            border-radius: 8px;
+            overflow: hidden;
+            height: 580px;
+            border: 2px solid var(--gray-200);
+        }
+        .webview-section iframe { width: 100%; height: 100%; border: none; }
+
+        .answer-sheet {
+            background: var(--gray-50);
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 16px;
+            height: 580px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .answer-sheet-title {
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 12px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            background: var(--gray-50);
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .answer-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .answer-item { display: grid; grid-template-columns: 44px 1fr; gap: 8px; align-items: center; }
+        .answer-item .no-soal {
+            padding: 8px 4px;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 13px;
+            background: white;
+            color: var(--gray-700);
+        }
+        .answer-item select {
+            padding: 8px 28px 8px 10px;
+            border: 2px solid var(--gray-300);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 700;
+            background-color: white;
+            cursor: pointer;
+            width: 100%;
+            min-height: 40px;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%234b5563' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+        }
+        .answer-item select:focus { outline: none; border-color: var(--primary); }
+        .answer-item select.answered {
+            border-color: var(--success);
+            color: var(--success);
+            background-color: rgba(16,185,129,0.05);
+        }
+
+        /* ===== MODAL ===== */
+        .modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6); z-index: 1000;
+            align-items: flex-end; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 16px 16px 0 0;
+            padding: 28px 24px 36px;
+            width: 100%; max-width: 480px;
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+        .modal-handle { width: 40px; height: 4px; background: var(--gray-300); border-radius: 2px; margin: 0 auto 20px; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-title  { font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 10px; }
+        .modal-text   { color: var(--gray-700); font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+        .modal-form   { margin-bottom: 16px; }
+        .modal-form input {
+            width: 100%; padding: 13px 14px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px; font-size: 16px;
+            font-family: inherit; -webkit-appearance: none;
+        }
+        .modal-form input:focus { outline: none; border-color: var(--primary); }
+
+        /* ===== PARTICIPANT INFO ===== */
+        .participant-info {
+            background: linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(118,75,162,0.05) 100%);
+            border: 2px solid var(--primary);
+            border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;
+        }
+        .participant-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+        .participant-info-item { font-size: 13px; }
+        .participant-info-label { font-weight: 600; color: var(--gray-600); font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
+        .participant-info-value { color: var(--gray-900); font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ===== RESULT ===== */
+        .result-section { text-align: center; max-width: 480px; margin: 0 auto; }
+        .result-badge {
+            width: 100px; height: 100px; margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 40px; font-weight: 700;
+            box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+        }
+        .result-title { font-size: 22px; font-weight: 700; color: var(--gray-900); margin-bottom: 10px; }
+        .result-text  { color: var(--gray-700); font-size: 13px; line-height: 1.7; margin-bottom: 20px; }
+        .result-details { background: var(--gray-50); border: 2px solid var(--gray-200); border-radius: 8px; padding: 16px; margin-bottom: 20px; text-align: left; }
+        .result-detail-item { display: grid; grid-template-columns: 120px 1fr; gap: 8px; margin-bottom: 10px; font-size: 13px; }
+        .result-detail-item:last-child { margin-bottom: 0; }
+        .result-detail-label { font-weight: 600; color: var(--gray-600); }
+        .result-detail-value { color: var(--gray-900); font-weight: 500; }
+
+        /* ===== ERROR ===== */
+        .error-message {
+            background: rgba(239,68,68,0.1); border: 2px solid var(--danger);
+            color: var(--danger); padding: 12px 14px; border-radius: 8px;
+            margin-bottom: 16px; font-size: 13px; text-align: center; line-height: 1.5;
+        }
+
+        /* ===== LOADING ===== */
+        .loading-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(255,255,255,0.85); z-index: 999;
+            align-items: center; justify-content: center;
+            flex-direction: column; gap: 12px;
+        }
+        .loading-overlay.active { display: flex; }
+        .loading-spinner { width: 40px; height: 40px; border: 4px solid var(--gray-200); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .loading-text { font-size: 14px; color: var(--gray-600); font-weight: 500; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== SCROLLBAR ===== */
+        .answer-sheet::-webkit-scrollbar { width: 6px; }
+        .answer-sheet::-webkit-scrollbar-track { background: var(--gray-100); border-radius: 10px; }
+        .answer-sheet::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 10px; }
+
+        /* ===== TABLET ===== */
+        @media (max-width: 1024px) {
+            .exam-container { grid-template-columns: 1fr; gap: 12px; }
+            .webview-section { height: 420px; }
+            .answer-sheet { height: auto; max-height: none; }
+            .answer-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+        }
+
+        /* ===== MOBILE ===== */
+        @media (max-width: 640px) {
+            body { padding: 0; align-items: flex-start; }
+            .container { border-radius: 0; min-height: 100vh; box-shadow: none; margin-bottom: 0; }
+            .header { padding: 16px; position: sticky; top: 0; z-index: 100; }
+            .page { padding: 16px; }
+            .exam-container { grid-template-columns: 1fr; gap: 12px; }
+            .webview-section { height: 55vw; min-height: 240px; max-height: 320px; }
+            .answer-sheet { height: auto; padding: 12px; }
+            .answer-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+            .answer-item .no-soal { font-size: 12px; padding: 6px 2px; }
+            .answer-item select { font-size: 13px; padding: 7px 24px 7px 8px; min-height: 36px; }
+            .participant-info-grid { grid-template-columns: 1fr 1fr; }
+            .result-detail-item { grid-template-columns: 1fr; gap: 2px; margin-bottom: 12px; }
+            .result-detail-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+            .modal { align-items: flex-end; }
+            .modal-content { border-radius: 20px 20px 0 0; padding: 20px 20px 40px; max-width: 100%; }
+            .btn-group { gap: 10px; }
+            .submit-bar { position: sticky; bottom: 0; background: white; padding: 12px 0 0; margin-top: 12px; border-top: 1px solid var(--gray-200); }
+        }
+
+        /* ===== SMALL MOBILE ===== */
+        @media (max-width: 380px) {
+            .header h1 { font-size: 16px; }
+            .answer-item .no-soal { font-size: 11px; }
+            .answer-item select { font-size: 12px; }
+        }
+
+        /* ===== DESKTOP HOVER ===== */
+        @media (hover: hover) and (pointer: fine) {
+            .btn-primary:hover:not(:disabled)  { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(37,99,235,0.3); }
+            .btn-secondary:hover { background: var(--gray-300); transform: translateY(-2px); }
+            .btn-success:hover:not(:disabled)  { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 16px rgba(16,185,129,0.3); }
+            .btn-danger:hover    { background: #dc2626; transform: translateY(-2px); }
+            .modal-content { border-radius: 12px; }
+            .modal { align-items: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Memuat data...</div>
+    </div>
+
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>📚 Sistem Asesmen Sumatif Akhir Jenjang On line</h1>
+            <p>Platform Ujian Terpadu untuk Semua Mata Pelajaran</p>
+        </div>
+
+        <!-- PAGE 1: COVER / LOGIN -->
+        <div class="page active" id="page1">
+            <div class="cover-section">
+                <div class="info-box">
+                    <strong>⚠️ Petunjuk:</strong> Masukkan nomor peserta untuk memulai ujian. Data Anda akan otomatis terisi dari sistem.
+                </div>
+
+                <div class="form-group">
+                    <label for="noPeserta">Nomor Peserta</label>
+                    <input type="text" id="noPeserta" placeholder="Contoh: 001" autocomplete="off" inputmode="text">
+                </div>
+
+                <div id="participantDataContainer" style="display: none;">
+                    <div class="form-group">
+                        <label for="namaDisplay">Nama Lengkap</label>
+                        <input type="text" id="namaDisplay" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="kelasDisplay">Kelas</label>
+                        <input type="text" id="kelasDisplay" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="sekolahDisplay">Sekolah</label>
+                        <input type="text" id="sekolahDisplay" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mapelSelect">Pilih Mata Pelajaran</label>
+                        <select id="mapelSelect" onchange="onMapelChange()">
+                            <option value="">-- Pilih Mata Pelajaran --</option>
+                        </select>
+                    </div>
+
+                    <!-- ===== FORM KATA KUNCI ===== -->
+                    <div class="form-group" id="kataKunciGroup" style="display: none;">
+                        <label for="kataKunciInput">Kata Kunci</label>
+                        <div class="kata-kunci-wrapper">
+                            <input
+                                type="password"
+                                id="kataKunciInput"
+                                placeholder="Masukkan kata kunci ujian"
+                                autocomplete="off"
+                                oninput="validateKataKunci()"
+                            >
+                            <button type="button" class="toggle-password-btn" onclick="toggleKataKunci()" title="Tampilkan/Sembunyikan">
+                                <span id="toggleIcon">👁️</span>
+                            </button>
+                        </div>
+                        <div class="kunci-status" id="kunciStatus"></div>
+                    </div>
+
+                    <button class="btn btn-primary" id="btnMulai" onclick="startExam()" disabled>
+                        🚀 MULAI UJIAN
+                    </button>
+                </div>
+
+                <div id="errorContainer"></div>
+            </div>
+        </div>
+
+        <!-- PAGE 2: EXAM -->
+        <div class="page" id="page2">
+            <div class="participant-info">
+                <div class="participant-info-grid">
+                    <div class="participant-info-item">
+                        <div class="participant-info-label">No Peserta</div>
+                        <div class="participant-info-value" id="infoNoPeserta">-</div>
+                    </div>
+                    <div class="participant-info-item">
+                        <div class="participant-info-label">Nama</div>
+                        <div class="participant-info-value" id="infoNama">-</div>
+                    </div>
+                    <div class="participant-info-item">
+                        <div class="participant-info-label">Mata Pelajaran</div>
+                        <div class="participant-info-value" id="infoMapel">-</div>
+                    </div>
+                    <div class="participant-info-item">
+                        <div class="participant-info-label">Waktu Mulai</div>
+                        <div class="participant-info-value" id="infoWaktu">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exam-container">
+                <div class="webview-section">
+                    <iframe id="examFrame" allow="fullscreen"></iframe>
+                </div>
+                <div class="answer-sheet">
+                    <div class="answer-sheet-title">📝 Lembar Jawaban</div>
+                    <div class="answer-grid" id="answerContainer"></div>
+                </div>
+            </div>
+
+            <div class="submit-bar">
+                <button class="btn btn-danger" onclick="showPasswordModal()">
+                    ✓ SELESAI &amp; SUBMIT
+                </button>
+            </div>
+        </div>
+
+        <!-- PAGE 3: RESULT -->
+        <div class="page" id="page3">
+            <div class="result-section">
+                <div class="result-badge" id="nilaiDisplay">-</div>
+                <h2 class="result-title">Ujian Selesai!</h2>
+                <p class="result-text">Terima kasih telah menyelesaikan ujian. Hasil Anda telah tersimpan di sistem.</p>
+                <div class="result-details">
+                    <div class="result-detail-item">
+                        <div class="result-detail-label">No Peserta</div>
+                        <div class="result-detail-value" id="resultNoPeserta">-</div>
+                    </div>
+                    <div class="result-detail-item">
+                        <div class="result-detail-label">Nama</div>
+                        <div class="result-detail-value" id="resultNama">-</div>
+                    </div>
+                    <div class="result-detail-item">
+                        <div class="result-detail-label">Kelas</div>
+                        <div class="result-detail-value" id="resultKelas">-</div>
+                    </div>
+                    <div class="result-detail-item">
+                        <div class="result-detail-label">Mata Pelajaran</div>
+                        <div class="result-detail-value" id="resultMapel">-</div>
+                    </div>
+                    <div class="result-detail-item">
+                        <div class="result-detail-label">Nilai</div>
+                        <div class="result-detail-value" id="resultNilai">-</div>
+                    </div>
+                    <div class="result-detail-item">
+                        <div class="result-detail-label">Waktu Selesai</div>
+                        <div class="result-detail-value" id="resultWaktu">-</div>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" onclick="resetExam()">← KEMBALI KE AWAL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASSWORD MODAL -->
+    <div class="modal" id="passwordModal">
+        <div class="modal-content">
+            <div class="modal-handle"></div>
+            <div class="modal-title">🔒 Konfirmasi Selesai</div>
+            <p class="modal-text">Masukkan password selesai untuk mensubmit jawaban Anda.</p>
+            <div class="modal-form">
+                <input type="password" id="passwordInput" placeholder="Password Selesai"
+                    onkeypress="if(event.key==='Enter') submitExam()">
+            </div>
+            <div id="passwordError" style="display:none; color:var(--danger); font-size:13px; margin-bottom:12px; text-align:center;"></div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="closePasswordModal()">Batal</button>
+                <button class="btn btn-success" onclick="submitExam()">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==== KONFIGURASI ====
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbz1bAj6ZCL1YD19n9yuWlu6h6lH1OEN6Q_PO_DMbyXzHWMe4WDMDGCJgKf0ThqJwGXT/exec';
+
+        // ==== STATE ====
+        let currentData = {
+            noPeserta: null, nama: null, kelas: null, sekolah: null,
+            namaMapel: null, url: null, kataKunci: null,
+            passwordSelesai: null, kunciJawaban: null,
+            startTime: null, jawaban: []
+        };
+
+        // Simpan semua data mapel untuk lookup kata kunci secara lokal
+        let mapelData = [];
+
+        // ==== UTILITY ====
+        function showPage(pageNum) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page' + pageNum).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showError(message, containerId = 'errorContainer') {
+            const container = document.getElementById(containerId);
+            if (container) container.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+
+        function clearError(containerId = 'errorContainer') {
+            const container = document.getElementById(containerId);
+            if (container) container.innerHTML = '';
+        }
+
+        function showLoading(text = 'Memuat data...') {
+            document.querySelector('#loadingOverlay .loading-text').textContent = text;
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        async function callGAS(action, params) {
+            try {
+                const url = new URL(GAS_URL);
+                url.searchParams.append('action', action);
+                for (const [key, value] of Object.entries(params)) {
+                    url.searchParams.append(key, typeof value === 'object' ? JSON.stringify(value) : value);
+                }
+                const response = await fetch(url.toString(), { method: 'GET' });
+                const text = await response.text();
+                return JSON.parse(text);
+            } catch (error) {
+                console.error('GAS Error:', error);
+                return { success: false, message: 'Gagal terhubung ke server' };
+            }
+        }
+
+        // ==== TOGGLE VISIBILITY KATA KUNCI ====
+        function toggleKataKunci() {
+            const input = document.getElementById('kataKunciInput');
+            const icon  = document.getElementById('toggleIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                icon.textContent = '👁️';
+            }
+        }
+
+        // ==== VALIDASI KATA KUNCI REALTIME ====
+        function validateKataKunci() {
+            const namaMapel  = document.getElementById('mapelSelect').value;
+            const inputKunci = document.getElementById('kataKunciInput').value.trim();
+            const statusEl   = document.getElementById('kunciStatus');
+            const btnMulai   = document.getElementById('btnMulai');
+
+            if (!inputKunci) {
+                statusEl.className   = 'kunci-status';
+                statusEl.textContent = '';
+                btnMulai.disabled    = true;
+                return;
+            }
+
+            // Cari kata kunci mapel dari data lokal
+            const mapel = mapelData.find(m => m.namaMapel === namaMapel);
+            if (!mapel) return;
+
+            if (inputKunci === String(mapel.kataKunci).trim()) {
+                statusEl.className   = 'kunci-status valid';
+                statusEl.textContent = '✅ Kata kunci benar, silakan mulai ujian';
+                btnMulai.disabled    = false;
+            } else {
+                statusEl.className   = 'kunci-status invalid';
+                statusEl.textContent = '❌ Kata kunci salah';
+                btnMulai.disabled    = true;
+            }
+        }
+
+        // ==== SAAT MAPEL BERUBAH ====
+        function onMapelChange() {
+            const namaMapel      = document.getElementById('mapelSelect').value;
+            const kataKunciGroup = document.getElementById('kataKunciGroup');
+            const kataKunciInput = document.getElementById('kataKunciInput');
+            const statusEl       = document.getElementById('kunciStatus');
+            const btnMulai       = document.getElementById('btnMulai');
+
+            // Reset semua
+            kataKunciInput.value        = '';
+            kataKunciInput.type         = 'password';
+            document.getElementById('toggleIcon').textContent = '👁️';
+            statusEl.className          = 'kunci-status';
+            statusEl.textContent        = '';
+            btnMulai.disabled           = true;
+            clearError();
+
+            if (namaMapel) {
+                kataKunciGroup.style.display = 'block';
+                setTimeout(() => kataKunciInput.focus(), 100);
+            } else {
+                kataKunciGroup.style.display = 'none';
+            }
+        }
+
+        // ==== PAGE 1: COVER LOGIC ====
+        let debounceTimer;
+        document.getElementById('noPeserta').addEventListener('input', function() {
+            const noPeserta = this.value.trim();
+            clearError();
+            clearTimeout(debounceTimer);
+
+            if (!noPeserta) {
+                document.getElementById('participantDataContainer').style.display = 'none';
+                return;
+            }
+
+            debounceTimer = setTimeout(async () => {
+                showLoading('Mencari data peserta...');
+                const result = await callGAS('getParticipant', { noPeserta });
+                hideLoading();
+
+                if (result.success) {
+                    currentData.noPeserta = result.noPeserta;
+                    currentData.nama      = result.nama;
+                    currentData.kelas     = result.kelas;
+                    currentData.sekolah   = result.sekolah;
+
+                    document.getElementById('namaDisplay').value    = result.nama;
+                    document.getElementById('kelasDisplay').value   = result.kelas;
+                    document.getElementById('sekolahDisplay').value = result.sekolah;
+
+                    await loadMapelList();
+                    document.getElementById('participantDataContainer').style.display = 'block';
+                } else {
+                    showError('❌ Nomor peserta tidak ditemukan. Periksa kembali nomor Anda.');
+                    document.getElementById('participantDataContainer').style.display = 'none';
+                }
+            }, 600);
+        });
+
+        async function loadMapelList() {
+            const result = await callGAS('getMapelList', {});
+
+            if (result.success) {
+                // Simpan lengkap termasuk kataKunci untuk validasi lokal
+                mapelData = result.mapel;
+
+                const select = document.getElementById('mapelSelect');
+                select.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
+                result.mapel.forEach(mapel => {
+                    const option = document.createElement('option');
+                    option.value       = mapel.namaMapel;
+                    option.textContent = mapel.namaMapel;
+                    select.appendChild(option);
+                });
+
+                // Reset kata kunci
+                document.getElementById('kataKunciGroup').style.display = 'none';
+                document.getElementById('btnMulai').disabled = true;
+            }
+        }
+
+        async function startExam() {
+            const namaMapel  = document.getElementById('mapelSelect').value;
+            const inputKunci = document.getElementById('kataKunciInput').value.trim();
+
+            if (!namaMapel) {
+                showError('⚠️ Silakan pilih mata pelajaran terlebih dahulu.');
+                return;
+            }
+
+            // Verifikasi ulang kata kunci sebelum lanjut
+            const mapel = mapelData.find(m => m.namaMapel === namaMapel);
+            if (!mapel || inputKunci !== String(mapel.kataKunci).trim()) {
+                showError('❌ Kata kunci salah. Tidak dapat memulai ujian.');
+                return;
+            }
+
+            showLoading('Memuat soal ujian...');
+            const result = await callGAS('getMapelDetail', { namaMapel });
+            hideLoading();
+
+            if (result.success) {
+                currentData.namaMapel       = result.namaMapel;
+                currentData.url             = result.url;
+                currentData.kataKunci       = result.kataKunci;
+                currentData.passwordSelesai = result.passwordSelesai;
+                currentData.kunciJawaban    = result.kunciJawaban;
+                currentData.startTime       = new Date().toLocaleString('id-ID');
+                currentData.jawaban         = new Array(50).fill('');
+
+                loadExamPage();
+                showPage(2);
+            } else {
+                showError('❌ ' + result.message);
+            }
+        }
+
+        // ==== PAGE 2: EXAM LOGIC ====
+        function loadExamPage() {
+            document.getElementById('infoNoPeserta').textContent = currentData.noPeserta;
+            document.getElementById('infoNama').textContent      = currentData.nama;
+            document.getElementById('infoMapel').textContent     = currentData.namaMapel;
+            document.getElementById('infoWaktu').textContent     = currentData.startTime;
+
+            document.getElementById('examFrame').src = currentData.url;
+
+            const answerContainer = document.getElementById('answerContainer');
+            answerContainer.innerHTML = '';
+
+            for (let i = 0; i < 50; i++) {
+                const answerItem = document.createElement('div');
+                answerItem.className = 'answer-item';
+                answerItem.innerHTML = `
+                    <div class="no-soal">${i + 1}</div>
+                    <select id="jawaban-${i}" onchange="updateJawaban(${i}, this.value)">
+                        <option value="">-</option>
+                        ${['A','B','C','D','E','F','G','H','I','J','K','L']
+                            .map(opt => `<option value="${opt}">${opt}</option>`)
+                            .join('')}
+                    </select>
+                `;
+                answerContainer.appendChild(answerItem);
+            }
+        }
+
+        function updateJawaban(index, value) {
+            currentData.jawaban[index] = value;
+            const select = document.getElementById('jawaban-' + index);
+            select.classList.toggle('answered', !!value);
+        }
+
+        function showPasswordModal() {
+            document.getElementById('passwordModal').classList.add('active');
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordError').style.display = 'none';
+            setTimeout(() => document.getElementById('passwordInput').focus(), 300);
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.remove('active');
+        }
+
+        async function submitExam() {
+            const password = document.getElementById('passwordInput').value;
+
+            if (!password) {
+                document.getElementById('passwordError').textContent = 'Password tidak boleh kosong';
+                document.getElementById('passwordError').style.display = 'block';
+                return;
+            }
+
+            if (String(password).trim() !== String(currentData.passwordSelesai).trim()) {
+                document.getElementById('passwordError').textContent = 'Password salah';
+                document.getElementById('passwordError').style.display = 'block';
+                return;
+            }
+
+            closePasswordModal();
+            showLoading('Menyimpan hasil ujian...');
+
+            const result = await callGAS('saveResult', {
+                noPeserta:    currentData.noPeserta,
+                nama:         currentData.nama,
+                kelas:        currentData.kelas,
+                sekolah:      currentData.sekolah,
+                namaMapel:    currentData.namaMapel,
+                jawabanSiswa: currentData.jawaban,
+                kunciJawaban: currentData.kunciJawaban
+            });
+
+            hideLoading();
+
+            if (result.success) {
+                showResultPage(result.nilai);
+            } else {
+                showError('❌ Gagal menyimpan hasil: ' + result.message);
+            }
+        }
+
+        // ==== PAGE 3: RESULT ====
+        function showResultPage(nilai) {
+            const waktuSekarang = new Date().toLocaleString('id-ID');
+            document.getElementById('nilaiDisplay').textContent    = nilai;
+            document.getElementById('resultNoPeserta').textContent = currentData.noPeserta;
+            document.getElementById('resultNama').textContent      = currentData.nama;
+            document.getElementById('resultKelas').textContent     = currentData.kelas;
+            document.getElementById('resultMapel').textContent     = currentData.namaMapel;
+            document.getElementById('resultNilai').textContent     = nilai + ' / 100';
+            document.getElementById('resultWaktu').textContent     = waktuSekarang;
+            showPage(3);
+        }
+
+        function resetExam() {
+            currentData = {
+                noPeserta: null, nama: null, kelas: null, sekolah: null,
+                namaMapel: null, url: null, kataKunci: null,
+                passwordSelesai: null, kunciJawaban: null,
+                startTime: null, jawaban: []
+            };
+            mapelData = [];
+            document.getElementById('noPeserta').value = '';
+            document.getElementById('participantDataContainer').style.display = 'none';
+            document.getElementById('kataKunciGroup').style.display = 'none';
+            document.getElementById('btnMulai').disabled = true;
+            clearError();
+            showPage(1);
+        }
+
+        // ==== MODAL CLOSE ====
+        window.addEventListener('keydown', e => { if (e.key === 'Escape') closePasswordModal(); });
+        document.getElementById('passwordModal').addEventListener('click', function(e) {
+            if (e.target === this) closePasswordModal();
+        });
+
+        console.log('Sistem Ujian Online Ready');
+    </script>
+</body>
+</html>
